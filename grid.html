@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG.js Circle Drag with Limited Movement Example</title>
+    <!-- Include SVG.js library -->
+    <script src="node_modules/@svgdotjs/svg.js/dist/svg.js"></script>
+<script src="node_modules/@svgdotjs/svg.draggable.js/dist/svg.draggable.js"></script>
+<style>
+    svg {
+        background-color: skyblue;
+    }
+
+    body{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+</head>
+<body>
+
+<script>
+    // Create an SVG.js draw container
+    const draw = SVG().addTo('body').size(800, 800);
+
+    // Create a grid
+    const gridSize = 100;
+    for (let i = 0; i <= 800; i += gridSize) {
+        draw.line(i, 0, i, 800).stroke({ width: 1, color: '#ddd' });
+        draw.line(0, i, 800, i).stroke({ width: 1, color: '#ddd' });
+    }
+
+    // Create a circle at the center
+    const circle = draw.circle(100).center(200, 200).fill('#3498db');
+
+    // Make the circle draggable using the draggable plugin
+    circle.draggable();
+
+
+    // Add a dragmove event listener
+    circle.on('dragmove', (event) => {
+        // Calculate the change in position
+         // Calculate the change in position
+
+         event.preventDefault()
+       
+
+   
+
+        
+            // Round the circle's position to the nearest multiple of gridSize
+            const newX = (Math.round(event.detail.box.x / gridSize) * gridSize) 
+            const newY = (Math.round(event.detail.box.y/ gridSize) * gridSize) 
+
+
+            console.log(newX , newY)
+
+            // Update the circle's position
+            circle.move(newX, newY);
+        
+    });
+
+</script>
+
+</body>
+</html>

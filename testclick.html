@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SVG Circle Creator with Zoom and Pan</title>
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 1px solid #ddd;
+    }
+
+    button {
+      font-size: 18px;
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<svg id="mySvg" xmlns="http://www.w3.org/2000/svg"></svg>
+
+<div>
+  <button onclick="zoomIn()">+</button>
+  <button onclick="zoomOut()">-</button>
+  <button onclick="panLeft()">&#60;</button>
+  <button onclick="panRight()">&#62;</button>
+  <button onclick="panUp()">^</button>
+  <button onclick="panDown()">v</button>
+</div>
+
+<script>
+  let zoomLevel = 1; // Initial zoom level
+  let panX = 0; // Initial pan X
+  let panY = 0; // Initial pan Y
+
+  // Function to handle click events on the SVG
+  function handleSVGClick(event) {
+    // Get the SVG element
+    const svg = document.getElementById("mySvg");
+
+    // Get the SVG coordinates
+    const svgRect = svg.getBoundingClientRect();
+    const svgX = (event.clientX - svgRect.left - panX) / zoomLevel; // Adjust for zoom and pan
+    const svgY = (event.clientY - svgRect.top - panY) / zoomLevel; // Adjust for zoom and pan
+
+    // Create a circle element
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+
+    // Set circle attributes
+    circle.setAttribute("cx", svgX);
+    circle.setAttribute("cy", svgY);
+    circle.setAttribute("r", 50 ); // Adjust for zoom
+    circle.setAttribute("fill", "blue");
+
+    // Append the circle to the SVG
+    svg.appendChild(circle);
+  }
+
+  // Function to update the viewBox based on the SVG size, zoom level, and pan
+  function updateViewBox(svg) {
+    svg.setAttribute("viewBox", `${-panX / zoomLevel} ${-panY / zoomLevel} ${svg.width.baseVal.value / zoomLevel} ${svg.height.baseVal.value / zoomLevel}`);
+  }
+
+  // Attach the click event listener to the SVG
+  document.getElementById("mySvg").addEventListener("click", function (event) {
+    handleSVGClick(event);
+  });
+
+  // Attach the resize event listener to the window
+  window.addEventListener("resize", function () {
+    const svg = document.getElementById("mySvg");
+    updateViewBox(svg);
+  });
+
+  // Function to handle zoom in
+  function zoomIn() {
+    zoomLevel *= 1.2; // Increase zoom level
+    const svg = document.getElementById("mySvg");
+    updateViewBox(svg);
+  }
+
+  // Function to handle zoom out
+  function zoomOut() {
+    zoomLevel /= 1.2; // Decrease zoom level
+    const svg = document.getElementById("mySvg");
+    updateViewBox(svg);
+  }
+
+  // Function to handle panning left
+  function panLeft() {
+    
+    panX -= 50 * zoomLevel; // Adjust the panning increment as needed
+
+    
+    const svg = document.getElementById("mySvg");
+    updateViewBox(svg);
+  }
+
+  // Function to handle panning right
+  function panRight() {
+    console.log(panX)
+    panX += 50 * zoomLevel; // Adjust the panning increment as needed
+    const svg = document.getElementById("mySvg");
+    console.log(zoomLevel, 'this btich')
+    updateViewBox(svg);
+  }
+
+  // Function to handle panning up
+  function panUp() {
+    panY -= 50 * zoomLevel; // Adjust the panning increment as needed
+    const svg = document.getElementById("mySvg");
+    updateViewBox(svg);
+  }
+
+  // Function to handle panning down
+  function panDown() {
+    panY += 50 * zoomLevel; // Adjust the panning increment as needed
+    const svg = document.getElementById("mySvg");
+    updateViewBox(svg);
+  }
+</script>
+
+</body>
+</html>

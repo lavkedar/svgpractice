@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SVG.js Example</title>
+  <style>
+    /* Style to add a border to the SVG element and center it */
+    body {
+      margin: 0;
+      height: 150vh;
+      display: flex;
+      align-items: center;
+      justify-content: space-evenly;
+      flex-direction: column;
+    }
+
+    svg {
+      border: 1px solid #000;
+    }
+
+    .container {
+    position: relative;
+    order: -1;
+}
+
+.plus-btn,
+.minus-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    cursor: pointer;
+
+}
+
+.plus-btn {
+    left: 10px;
+}
+
+.minus-btn {
+    right: 10px;
+}
+
+.rect-btn {
+  right: 50px;
+}
+
+
+  </style>
+  <script src="node_modules/@svgdotjs/svg.js/dist/svg.js"></script>
+  <script src="node_modules/@svgdotjs/svg.panzoom.js/dist/svg.panzoom.js"></script>
+  
+</head>
+<body>
+  
+        <div id="svg"></div>
+ 
+   
+    <div class="container">
+        <button class="plus-btn" onclick="zoomIn()">+</button>
+        <button class="minus-btn" onclick="zoomOut()">-</button>
+        
+    </div>
+    <button class="rect-btn" onclick="clientRect()">client rect</button>
+
+<script>
+
+  let r 
+
+
+let panning = true
+
+
+  // Create an SVG element with a size of 800x800
+  const draw = SVG().addTo('#svg').size('800', '800') .viewbox('0 0 800 800')
+  .panZoom()
+
+  
+
+
+
+
+  setInterval(() => {
+
+    console.log(draw.zoom())
+    
+  }, 1000);
+
+
+
+  draw.on('click',(event)=>{
+
+
+
+    if(event.target.tagName=='rect'){
+        return
+    }
+    console.log(draw.point(event.pageX,event.pageY))
+    console.log(event.pageX,event.pageY, 'actual retards')
+    console.log(draw.point(event.offsetX,event.offsetY))
+    console.log(event.offsetX,event.offsetY,'these offset retard')
+    console.log(draw.point(event.clientX,event.clientY),'these clientx retards')
+
+    let a = draw.point(event.clientX,event.clientY)
+
+  
+
+    // Draw a rectangle as an example
+    r =  draw.rect(100, 100).move(350, 350).fill('#f00').attr({ x : a.x - 50 , y : a.y-50})
+
+    
+
+
+
+  })
+
+
+  function clientRect(){
+    console.log(draw.find('rect').rbox())
+    console.log(draw.find('rect').bbox(),'bbox des')
+    console.log(draw.find('rect').rbox(draw),'rbox with draw inside')
+  }
+
+ 
+
+ 
+
+  // Draw a rectangle as an example
+  draw.rect(100, 100).move(350, 350).fill('#f00');
+
+  function zoomIn(){
+    draw.zoom(draw.zoom()+.1)
+  }
+  function zoomOut(){
+    draw.zoom(draw.zoom()- .1)
+  }
+</script>
+
+</body>
+</html>

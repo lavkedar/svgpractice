@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SVG Circle Creator with Zoom, Pan, Save, and Load</title>
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 1px solid #ddd;
+    }
+
+    button {
+    font-size: 18px;
+    margin: 5px;
+    min-width: 25px;
+    height: 25px
+  }
+
+  .zoom {
+    position: absolute;
+    right: 15px;
+    
+    top : 15px;
+
+    margin-left : 20px
+  }
+
+  * { box-sizing: border-box;}
+  </style>
+</head>
+<body>
+
+<svg id="mySvg" xmlns="http://www.w3.org/2000/svg"></svg>
+
+<div>
+  <button onclick="zoomIn()">+</button>
+  <button onclick="zoomOut()">-</button>
+  <button onclick="panLeft()">&#60;</button>
+  <button onclick="panRight()">&#62;</button>
+  <button onclick="panUp()">^</button>
+  <button onclick="panDown()">v</button>
+  <button onclick="saveCircles()">Save Circles</button>
+  <input type="file" id="fileInput" accept=".json" />
+  <button onclick="loadCircles()">Load Circles</button>
+</div>
+
+<script>
+  let zoomLevel = 1; // Initial zoom level
+  let panX = 0; // Initial pan X
+  let panY = 0; // Initial pan Y
+  let circles = []; // List to store circle coordinates
+
+  // Function to handle click events on the SVG
+  function handleSVGClick(event) {
+    // Get the SVG element
+    const svg = document.getElementById("mySvg");
+
+    // Get the SVG coordinates
+    const svgRect = svg.getBoundingClientRect();
+    const svgX = (event.clientX - svgRect.left - panX) / zoomLevel; // Adjust for zoom and pan
+    const svgY = (event.clientY - svgRect.top - panY) / zoomLevel; // Adjust for zoom and pan
+
+    // Create a circle element
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+
+    // Set circle attributes
+    circle.setAttribute("cx", svgX);
+    circle.setAttribute("cy", svgY);
+    circle.setAttribute("r", 50 ); // Adjust for zoom
+    circle.setAttribute("fill", "blue");
+
+    // Append the circle to the SVG
+    svg.appendChild(circle);
+
+    // Store the circle coordinates
+    circles.push({ x: svgX, y: svgY });
+  }
+
+  // Function to update the viewBox based on the SVG size, zoom level, and pan
+  function updateViewBox(svg) {
+    svg.setAttribute("viewBox", `${-panX } ${-panY } ${svg.width.baseVal.value / zoomLevel} ${svg.height.baseVal.value / zoomLevel}`);
+  }
+
+  // Attach the click event listener to the SVG
+  document.getElementById("mySvg").addEventListener("click", function (event) {
+    handleSVGClick(event);
+  });
+
+  // Attach the resize event listener to the window
+  window.addEventListener("resize", function () {
+    const svg = document.getElementById("mySvg");
+    updateViewBox(svg);
+  });
+
+  // Function to handle zoom in
+  function zoomIn() {
+    zoomLevel *= 1.2; // Increase zoom level
+    const svg = document.getElementById("mySvg");
+    updateViewBox(svg);
+  }
+
+  // Function to handle zoom out
+  function zoomOut() {
+    zoomLevel /= 1.2; // Decrease zoom level
+    const svg = document.getElementById("mySvg");
+    updateViewBox(svg);
+  }
+
+  // Function to handle panning left
+  function panLeft() {
+    panX -= 50  // Adjust the panning increment as needed
+    const svg = document.getElementById("mySvg");
+    updateViewBox(svg);
+  }
+
+  // Function to handle panning right
+  function panRight() {
+    panX += 50  // Adjust the panning increment as needed
+    const svg = document.getElementById("mySvg");
+    updateViewBox(svg);
+  }
+
+  // Function to handle panning up
+  function panUp() {
+    panY -= 50  // Adjust the panning increment as needed
+    const svg = document.getElementById("mySvg");
+    updateViewBox(svg);
+  }
+
+  // Function to handle panning down
+  function panDown() {
+    panY += 50  // Adjust the panning increment as needed
+    const svg = document.getElementById("mySvg");
+    updateViewBox(svg);
+  }
+
+  // Function to save circles and zoom level to a JSON file
+  function saveCircles() {
+    const data = {
+      circles: circles,
+      zoomLevel: zoomLevel
+    };
+    const jsonString = JSON.stringify(data);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    // Create a download link
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "circles.json";
+    document.body.appendChild(a);
+    
+    // Trigger a click on the link to start the download
+    a.click();
+
+    // Remove the link from the DOM
+    document.body.removeChild(a);
+  }
+
+  // Function to load circles and zoom level from a JSON file
+  function loadCircles() {
+    const fileInput = document.getElementById("fileInput");
+    
+    if (fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        const content = e.target.result;
+        try {
+          const data = JSON.parse(content);
+          circles = data.circles || [];
+          zoomLevel = data.zoomLevel || 1;
+
+          // Clear existing circles
+          const svg = document.getElementById("mySvg");
+          svg.innerHTML = "";
+
+          // Draw circles
+          circles.forEach(circle => {
+            const circleElement = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circleElement.setAttribute("cx", circle.x);
+            circleElement.setAttribute("cy", circle.y);
+            circleElement.setAttribute("r", 50 );
+            circleElement.setAttribute("fill", "blue");
+            svg.appendChild(circleElement);
+          });
+
+          // Update the view box
+          updateViewBox(svg);
+        } catch (error) {
+          console.error("Error parsing JSON file:", error);
+        }
+      };
+
+      reader.readAsText(file);
+    }
+  }
+</script>
+
+</body>
+</html>
