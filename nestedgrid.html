@@ -23,44 +23,62 @@
 
 <script>
     // Create an SVG.js draw container
-    const draw = SVG().addTo('body').size(800, 800);
+    const draw = SVG().addTo('body').size(800, 800).viewbox('0 0 1600 1600')
 
     // Create a grid
-    const gridSize = 100;
-    for (let i = 0; i <= 800; i += gridSize) {
-        draw.line(i, 0, i, 800).stroke({ width: 1, color: '#ddd' });
-        draw.line(0, i, 800, i).stroke({ width: 1, color: '#ddd' });
+    const gridSize = 25;
+    for (let i = 0; i <= 1600; i += gridSize) {
+        draw.line(i, 0, i, 1600).stroke({ width: 1, color: '#ddd' });
+        draw.line(0, i, 1600, i).stroke({ width: 1, color: '#ddd' });
     }
 
     // Create a circle at the center
-    const circle = draw.circle(100).center(200, 200).fill('#3498db');
+    const ns = draw.nested().draggable().attr({ x : 150 , y : 150 , width : 200 , height : 200 , overflow : 'visible'})
+    ns.circle(100).fill('#3498db').attr({ x : 0 , y : 0})
 
     // Make the circle draggable using the draggable plugin
-    circle.draggable();
+
+
+    let prevX =0 
+    let  prevY = 0
+
+
+    
+    
 
 
     // Add a dragmove event listener
-    circle.on('dragmove', (event) => {
+    ns.on('dragmove', (event) => {
         // Calculate the change in position
          // Calculate the change in position
 
          event.preventDefault()
+         
 
-         console.log(event.detail.box.x,event.detail.box.y)
+
+         let point = draw.point(event.detail.event.clientX,event.detail.event.clientY)
+
+        
+
+         console.log(point.x,point.y,'viewbox coord')
        
 
    
 
         
             // Round the circle's position to the nearest multiple of gridSize
-            const newX = (Math.round(event.detail.box.x  / gridSize) * gridSize) 
-            const newY = (Math.round(event.detail.box.y/ gridSize) * gridSize) 
+            const newX = (Math.round((point.x)/ gridSize) * gridSize) 
+            const newY = (Math.round((point.y)/ gridSize) * gridSize) 
+
+            console.log(newX,newY)
 
 
-            console.log(newX , newY)
+            // console.log({ x : event.detail.box.x , y : event.detail.box.y },event.detail.event)
 
-            // Update the circle's position
-            circle.move(newX, newY);
+           
+                ns.move(newX, newY);
+            
+            
         
     });
 
