@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toggle SVG.js Event Listeners</title>
+  <script src="node_modules/@svgdotjs/svg.js/dist/svg.js"></script>
+  <script src="node_modules/@svgdotjs/svg.draggable.js/dist/svg.draggable.js"></script>
+</head>
+<body>
+
+<div id="drawing"></div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const draw = SVG().addTo('#drawing').size(800, 800)
+    draw.css({'border': '1px solid black'})
+
+
+    const group = draw.group()
+
+
+    const circle = group.circle(100).move(50, 50).fill('blue');
+
+    group.circle(100).move(100, 300).fill('red');
+
+    group.circle(100).move(300, 50).fill('pink');
+
+    group.rect(100,100).move(500, 50).fill('green');
+
+    let listenersActive = false;
+
+    startx = 0
+    startY =0
+    ismousedown = false
+
+    rect = draw.rect(0,0,0,0).stroke('red').draggable()
+
+    function handleMouseDown(event) {
+      console.log('Mouse down');
+
+      ismousedown = true
+
+      startx = event.clientX
+      startY = event.clientY
+    }
+
+    function handleMouseMove(event) {
+      if(ismousedown){
+        let width = startx- event.clientX
+      let height = startY - event.clientY
+      // rect.attr({ x : (width < 0 ? startx : event.clientX), y : height <0 ? startY : event.clientY , width : Math.abs(width) , height : Math.abs(height)})
+      group.translate(-group.transform('translateX')-width,-group.transform('translateY')-height)
+
+      }
+
+      
+    }
+
+    function handleMouseUp(event) {
+      console.log('Mouse up');
+      // rect.attr({x : 0 , y : 0 , width : 0 , height : 0})
+      ismousedown = false
+
+
+  
+
+      
+
+      group.each(function () {
+
+        console.log(this.attr('x'))
+  // Apply the group's transform matrix to each child element
+  // this.translate(group.transform('translateX'),group.transform('translateY'));
+  this.attr({x : this.attr('x')+group.transform('translateX'),y : this.attr('y')+group.transform('translateY'),})
+});
+
+group.translate(-group.transform('translateX'),-group.transform('translateY'))
+
+
+    }
+
+
+
+    
+
+    function toggleEventListeners() {
+      if (listenersActive) {
+        draw.off('mousedown', handleMouseDown);
+        draw.off('mousemove', handleMouseMove);
+        draw.off('mouseup', handleMouseUp);
+        listenersActive = false;
+      } else {
+        draw.on('mousedown', handleMouseDown);
+        draw.on('mousemove', handleMouseMove);
+        draw.on('mouseup', handleMouseUp);
+        listenersActive = true;
+      }
+    }
+
+
+    draw.on('contextmenu',(event)=>{
+      event.preventDefault()
+    })
+
+    function handleDoubleClick(event) {
+      console.log('Double click')
+      setTimeout(() => {
+        toggleEventListeners();
+      }, 1000);
+      
+    }
+
+    draw.on('dblclick', handleDoubleClick);
+  });
+</script>
+
+</body>
+</html>

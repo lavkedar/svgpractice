@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SVG Circle Creator</title>
+  <style>
+    body {
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      height: 100vh;
+      margin: 0;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    button {
+      font-size: 16px;
+      margin-right: 10px;
+    }
+
+    .selection-rectangle {
+      fill: pink;
+      opacity: 0.5;
+      stroke: #ff69b4; /* Dotted border color */
+      stroke-width: 2;
+      stroke-dasharray: 4; /* Dotted border style */
+    }
+  </style>
+</head>
+<body>
+
+<button onclick="zoomIn()">+</button>
+<button onclick="zoomOut()">-</button>
+<button onclick="toggleSelectionMode()">Selection Mode</button>
+<button onclick="toggleMoveMode()">Move Mode</button>
+
+<svg width="800" height="800" viewBox="0 0 800 800" style="border: 1px solid black;" id="svgContainer">
+  <!-- SVG content will be dynamically added here -->
+</svg>
+
+<script>
+  let zoomLevel = 1; // Initial zoom level
+  let selectionMode = false; // Initial selection mode state
+  let moveMode = false; // Initial move mode state
+  let selectionStart = { x: 0, y: 0 };
+  let selectionRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+  selectionRect.setAttribute("class", "selection-rectangle");
+  let selectedCircles = []; // Array to store selected circles during drag
+
+  // Function to handle click events for zooming in
+  function zoomIn() {
+    zoomLevel += 0.1;
+    updateViewBox();
+  }
+
+  // Function to handle click events for zooming out
+  function zoomOut() {
+    zoomLevel -= 0.1;
+    if (zoomLevel < 0.1) zoomLevel = 0.1; // Minimum zoom level
+    updateViewBox();
+  }
+
+  // Function to update the viewBox based on the current zoom level
+  function updateViewBox() {
+    const svgContainer = document.getElementById("svgContainer");
+    const viewBoxWidth = 800 / zoomLevel;
+    const viewBoxHeight = 800 / zoomLevel;
+    svgContainer.setAttribute("viewBox", `0 0 ${viewBoxWidth} ${viewBoxHeight}`);
+  }
+
+  // Function to handle click events
+  function createCircle(event) {
+    if (selectionMode || moveMode) {
+      // Handle selection/move mode logic
+      console.log("Selection/Move Mode is active.");
+      return;
+    }
+
+    // Get the clicked position with adjustment for offset
+    const svgContainer = document.getElementById("svgContainer");
+    const clickX = (event.clientX - svgContainer.getBoundingClientRect().left) / zoomLevel;
+    const clickY = (event.clientY - svgContainer.getBoundingClientRect().top) / zoomLevel;
+
+    // Create a circle element
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+
+    // Set circle attributes (you can customize these as needed)
+    circle.setAttribute("cx", clickX);
+    circle.setAttribute("cy", clickY);
+    circle.setAttribute("r", "10"); // Radius of the circle
+    circle.setAttribute("fill", "blue"); // Color of the circle
+
+    // Append the circle to the SVG container
+    svgContainer.appendChild(circle);
+  }
+
+  // Function to handle mousedown events in selection mode
+  function startSelectionBox(event) {
+    if (!selectionMode || moveMode) {
+      // Ignore if selection mode is not active or move mode is active
+      return;
+    }
+
+    // Get the starting point of the selection with adjustment for offset
+    const svgContainer = document.getElementById("svgContainer");
+    selectionStart.x = (event.clientX - svgContainer.getBoundingClientRect().left) / zoomLevel;
+    selectionStart.y = (event.clientY - svgContainer.getBoundingClientRect().top) / zoomLevel;
+
+    // Set the initial position and size of the selection rectangle
+    selectionRect.setAttribute("x", selectionStart.x);
+    selectionRect.setAttribute("y", selectionStart.y);
+    selectionRect.setAttribute("width", "0");
+    selectionRect.setAttribute("height", "0");
+
+    // Append the selection rectangle to the SVG container
+    svgContainer.appendChild(selectionRect);
+
+    // Clear the array of selected circles
+    selectedCircles = [];
+  }
+
+  // Function to handle mousemove events in selection mode
+  function updateSelectionBox(event) {
+    if (!selectionMode || moveMode || !selectionRect.parentElement) {
+      // Ignore if selection mode is not active, move mode is active, or the selection rectangle is not visible
+      return;
+    }
+
+    // Calculate the size and position of the selection rectangle with adjustment for offset
+    const svgContainer = document.getElementById("svgContainer");
+    const mouseX = (event.clientX - svgContainer.getBoundingClientRect().left) / zoomLevel;
+    const mouseY = (event.clientY - svgContainer.getBoundingClientRect().top) / zoomLevel;
+
+    const width = mouseX - selectionStart.x;
+    const height = mouseY - selectionStart.y;
+
+    // Update the position and size of the selection rectangle
+    selectionRect.setAttribute("x", width >= 0 ? selectionStart.x : mouseX);
+    selectionRect.setAttribute("y", height >= 0 ? selectionStart.y : mouseY);
+    selectionRect.setAttribute("width", Math.abs(width));
+    selectionRect.setAttribute("height", Math.abs(height));
+
+    // Mark circles inside the selection rectangle with a red fill
+    markCirclesInSelection();
+  }
+
+  // Function to handle mouseup events in selection mode
+  function endSelectionBox() {
+    if (!selectionMode || moveMode || !selectionRect.parentElement) {
+      // Ignore if selection mode is not active, move mode is active, or the selection rectangle is not visible
+      return;
+    }
+
+    // Perform any logic you need with the selection rectangle coordinates and size
+    console.log("Selection Rectangle Coordinates and Size:",
+      selectionRect.getAttribute("x"), selectionRect.getAttribute("y"),
+      selectionRect.getAttribute("width"), selectionRect.getAttribute("height"));
+
+    // Enable move mode for the selected circles
+    enableMoveMode();
+
+    // Remove the selection rectangle
+    selectionRect.remove();
+  }
+
+  // Function to toggle selection mode
+  function toggleSelectionMode() {
+    selectionMode = !selectionMode;
+    console.log("Selection Mode:", selectionMode ? "Active" : "Inactive");
+  }
+
+  // Function to toggle move mode
+  function toggleMoveMode() {
+    moveMode = !moveMode;
+    console.log("Move Mode:", moveMode ? "Active" : "Inactive");
+  }
+
+  // Function to mark circles inside the selection rectangle with a red fill
+  function markCirclesInSelection() {
+    const svgContainer = document.getElementById("svgContainer");
+    const circles = svgContainer.querySelectorAll("circle");
+
+    circles.forEach(circle => {
+      const cx = parseFloat(circle.getAttribute("cx"));
+      const cy = parseFloat(circle.getAttribute("cy"));
+
+      if (
+        cx >= parseFloat(selectionRect.getAttribute("x")) &&
+        cx <= parseFloat(selectionRect.getAttribute("x")) + parseFloat(selectionRect.getAttribute("width")) &&
+        cy >= parseFloat(selectionRect.getAttribute("y")) &&
+        cy <= parseFloat(selectionRect.getAttribute("y")) + parseFloat(selectionRect.getAttribute("height"))
+      ) {
+        // Circle is inside the selection rectangle
+        circle.setAttribute("fill", "red");
+        // Add the circle to the array of selected circles
+        selectedCircles.push(circle);
+      } else {
+        // Circle is outside the selection rectangle
+        circle.setAttribute("fill", "blue");
+      }
+    });
+  }
+
+  // Function to enable move mode for selected circles
+  function enableMoveMode() {
+    if (moveMode && selectedCircles.length > 0) {
+      // Add mousedown event listener for each selected circle in move mode
+      selectedCircles.forEach(circle => {
+        circle.addEventListener("mousedown", startMove);
+      });
+    }
+  }
+
+  // Function to handle mousedown events for moving circles
+  function startMove(event) {
+    // Get the initial position of the mouse and the selected circle
+    const initialMouseX = event.clientX;
+    const initialMouseY = event.clientY;
+    const selectedCircle = event.target;
+
+    // Get the initial position of the selected circle
+    const initialCircleX = parseFloat(selectedCircle.getAttribute("cx"));
+    const initialCircleY = parseFloat(selectedCircle.getAttribute("cy"));
+
+    // Add mousemove and mouseup event listeners to handle moving
+    document.addEventListener("mousemove", function handleMove(event) {
+      // Calculate the distance moved by the mouse
+      const deltaX = (event.clientX - initialMouseX) / zoomLevel;
+      const deltaY = (event.clientY - initialMouseY) / zoomLevel;
+
+      // Update the position of the selected circle
+      selectedCircle.setAttribute("cx", initialCircleX + deltaX);
+      selectedCircle.setAttribute("cy", initialCircleY + deltaY);
+    });
+
+    document.addEventListener("mouseup", function endMove() {
+      // Remove the event listeners after moving is complete
+      document.removeEventListener("mousemove", handleMove);
+      document.removeEventListener("mouseup", endMove);
+    });
+  }
+
+  // Attach click event listener to the SVG container for creating circles
+  document.getElementById("svgContainer").addEventListener("click", createCircle);
+
+  // Attach mousedown event listener to the SVG container for starting selection
+  document.getElementById("svgContainer").addEventListener("mousedown", startSelectionBox);
+
+  // Attach mousemove event listener to the SVG container for updating selection
+  document.getElementById("svgContainer").addEventListener("mousemove", updateSelectionBox);
+
+  // Attach mouseup event listener to the SVG container for ending selection
+  document.getElementById("svgContainer").addEventListener("mouseup", endSelectionBox);
+</script>
+
+</body>
+</html>
