@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="node_modules/@svgdotjs/svg.js/dist/svg.js"></script>
+    <script src="node_modules/@svgdotjs/svg.draggable.js/dist/svg.draggable.js"></script>
+    <style>
+        body {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #main {
+            width: 100%;
+            height: 100%;
+            background-color: skyblue;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="main"></div>
+    <script>
+        let treeData = '';
+        let treeWidths = []
+        let treeHeight = 0
+        let maxwidth = 0
+
+        let gridHeight = 0
+        let gridwidth = 0
+
+        let w = window.innerWidth
+        let h = window.innerHeight
+
+        indexCounter = {}
+
+        let mainn = SVG().addTo('#main').size('100%', '100%').viewbox(`0 0 ${w} ${h}`)
+
+        paper = mainn.group()
+
+        mainn.svg(`<defs>
+   <linearGradient id="lgrad" x1="0%" y1="50%" x2="100%" y2="50%" >
+    
+          <stop offset="0%" style="stop-color:rgb(255,255,0);stop-opacity:1.00" />
+          <stop offset="38%" style="stop-color:rgb(0,188,212);stop-opacity:1.00" />
+          <stop offset="69%" style="stop-color:rgb(238,130,238);stop-opacity:1.00" />
+          <stop offset="88%" style="stop-color:rgb(247,21,0);stop-opacity:1.00" />
+
+    </linearGradient>
+    <radialGradient id="rgrad" cx="50%" cy="50%" r="50%" >
+    
+    <stop offset="0%" style="stop-color:rgb(76,175,80);stop-opacity:1.00" />
+    <stop offset="100%" style="stop-color:rgb(49,220,255);stop-opacity:1.00" />
+
+</radialGradient>
+  </defs>`)
+
+        let linegroup = paper.group()
+
+        async function getData() {
+            try {
+                const response = await fetch('./sample.json');
+                const data = await response.json();
+                treeData = data;
+                main()
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+
+        getData()
+
+        function draw(rootnode,level) {
+            let index = indexCounter['level'+level]
+            let x = getOffset(level,index)
+
+            let c = paper.circle(50).attr({'fill' : 'url(#rgrad)' , 'stroke-width' : 1 , 'stroke' : 'white' , 'cx' : x  , 'cy': gridHeight * level, id : rootnode.id})
+
+            c.draggable()
+
+           
+                let a = indexCounter['level'+ (level-1)] -1
+                if(level!=0){
+                    // linegroup.line().attr({x1 : getOffset(level-1,a) , y1 : gridHeight * (level-1)  , x2 : x+5  , y2 : gridHeight * level , stroke : 'url(#lgrad)','stroke-width':5})
+
+                    linegroup.path(`M ${getOffset(level-1,a)} ${gridHeight * (level-1)} C ${getOffset(level-1,a)} ${(gridHeight * (level-1)) + 100}, ${x+5} ${(gridHeight * level) - 100}, ${x+5} ${gridHeight * level}`).attr({stroke : 'url(#lgrad)','stroke-width' : 5, fill : 'transparent'  })
+
+                }
+                
+
+            
+            
+
+            paper.text(rootnode.name).attr({x : x  , y : gridHeight * level + 35 , 'text-anchor' : "middle" , id : 'text'+ rootnode.id})
+            indexCounter['level'+level] = indexCounter['level'+level] + 1
+
+        }
+
+
+        function getOffset(level,index){
+            let a = Math.round((maxwidth - treeWidths[level])/2) 
+
+            
+            return a * gridwidth + index* gridwidth
+
+        }
+
+
+        function drawtree(rootnode, level = 0) {
+            draw(rootnode,level)
+
+        
+
+            if (rootnode.children.length > 0) {
+                
+                rootnode.children.forEach(element => {
+                    drawtree(element, level + 1)
+                    
+
+                });
+            }
+
+        }
+
+        // Function to calculate the height of the tree
+        function calculateTreeHeight(root) {
+            if (!root) {
+                return 0;
+            }
+
+            let maxHeight = 0;
+
+            for (const child of root.children) {
+                const childHeight = calculateTreeHeight(child);
+                maxHeight = Math.max(maxHeight, childHeight);
+            }
+
+            return maxHeight + 1;
+        }
+
+        // Function to calculate the width of the tree (maximum number of nodes at any level)
+        function calculateTreeWidth(root, level = 0, levelWidths = []) {
+            if (!root) {
+                return levelWidths;
+            }
+
+            if (levelWidths.length <= level) {
+                levelWidths.push(0);
+            }
+
+            levelWidths[level]++;
+
+            for (const child of root.children) {
+                calculateTreeWidth(child, level + 1, levelWidths);
+            }
+
+            return levelWidths;
+        }
+        
+
+        function main() {
+            treeHeight = calculateTreeHeight(treeData);
+            treeWidths = calculateTreeWidth(treeData);
+
+            for(let i in treeWidths){
+                maxwidth = Math.max(maxwidth,treeWidths[i])
+                indexCounter['level'+i] = 0
+            }
+            console.log('Tree Height:', treeHeight);
+        console.log('Tree Widths at Each Level:', treeWidths);
+        console.log('maxwidth',maxwidth)
+
+        gridHeight = Math.round(h/treeHeight)
+        gridwidth = Math.round(w/maxwidth)
+
+            drawtree(treeData)
+
+            let bb  = paper.bbox()
+            console.log(bb)
+            mainn.viewbox(`${bb.x} ${bb.y} ${bb.w} ${bb.h}`)
+            
+
+            setTimeout(() => {
+                linegroup.clear()
+                fixhorizontal(treeData)
+
+                setTimeout(() => {
+                    let bb  = paper.bbox()
+            console.log(bb)
+            mainn.viewbox(`${bb.x} ${bb.y} ${bb.w} ${bb.h}`)
+                    
+                }, 12000);
+                
+                
+            }, 5000);
+
+            
+            // mainn.viewbox('0 0 100 100')
+        }
+
+        function fixhorizontal(rootnode){
+
+            if(rootnode.children.length > 0){
+                rootnode.children.forEach(element=>{
+                    fixhorizontal(element)
+                })
+            }
+
+            let x = 0
+
+            rootnode.children.forEach(element=>{
+                x = x +  paper.findOne('#'+ element.id).bbox().x
+                
+            })
+
+            if(x!=0){
+                paper.findOne('#'+rootnode.id).animate(2000).attr({'cx' : (x/rootnode.children.length)-25})
+                paper.findOne('#text'+rootnode.id).animate(2000).attr({'x' : (x/rootnode.children.length)-25})
+
+            }
+
+            setTimeout(() => {
+
+                let p = paper.findOne('#'+rootnode.id).bbox()
+                rootnode.children.forEach(element=>{
+                    let c = paper.findOne('#'+ element.id).bbox()
+
+                    linegroup.path(`M ${p.x + 25} ${p.y + 25} C ${p.x + 25} ${p.y+ 100}, ${c.x+5 + 25} ${c.y - 100}, ${c.x+5+25} ${c.y+25}`).attr({stroke : 'url(#lgrad)','stroke-width' : 5, fill : 'transparent'  })
+
+                })
+                
+            }, 10000);
+
+            
+
+        }
+
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resizable Divs</title>
+  <style>
+    /* Style for the container div */
+    .container {
+      width: 100%;
+      height: 100vh; /* vh stands for viewport height */
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* Style for the red div */
+    .red {
+      width: 70%;
+      background-color: red;
+      overflow: hidden;
+      resize: horizontal; /* Enable horizontal resizing */
+      cursor: ew-resize; /* Set cursor to show resizing direction */
+    }
+
+    /* Style for the blue div */
+    .blue {
+      width: 30%;
+      background-color: blue;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="red" onmousedown="startResize(event)"></div>
+    <div class="blue"></div>
+  </div>
+
+  <script>
+    let resizing = false;
+
+    function startResize(event) {
+      resizing = true;
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', stopResize);
+    }
+
+    function handleMouseMove(event) {
+      if (resizing) {
+        const container = document.querySelector('.container');
+        const redDiv = document.querySelector('.red');
+        const blueDiv = document.querySelector('.blue');
+
+        const containerRect = container.getBoundingClientRect();
+        const newRedWidth = (event.clientX - containerRect.left) / containerRect.width * 100;
+        const newBlueWidth = 100 - newRedWidth;
+
+        redDiv.style.width = `${newRedWidth}%`;
+        blueDiv.style.width = `${newBlueWidth}%`;
+      }
+    }
+
+    function stopResize() {
+      resizing = false;
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', stopResize);
+    }
+  </script>
+</body>
+</html>

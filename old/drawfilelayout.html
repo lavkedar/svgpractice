@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Directory Tree Visualization</title>
+  <script src="node_modules/@svgdotjs/svg.js/dist/svg.js"></script>
+<script src="node_modules/@svgdotjs/svg.draggable.js/dist/svg.draggable.js"></script>
+<script src="node_modules/@svgdotjs/svg.panzoom.js/dist/svg.panzoom.js"></script>
+</head>
+<body>
+    <div id="svg" style="height: 100vh; width: 100vw;"></div>
+  <script>
+
+let levels = {
+  "1": 11,
+  "2": 92,
+  "3": 244,
+  "4": 349,
+  "5": 257,
+  "6": 83,
+  "7": 5
+}
+    // Load the JSON file
+    fetch('directoryTree.json')
+      .then(response => response.json())
+      .then(data => {
+        // Create an SVG container
+        const svg = SVG().addTo('#svg').size('100%', '100%').viewbox('0 0  1000 1000').panZoom()
+        console.log(data)
+
+        // Set the starting position for the root folder
+        const rootX = 400;
+        const rootY = 30;
+
+       
+
+          // Function to recursively draw the directory tree
+// Function to recursively draw the directory tree
+function drawTree(svg, node, x, y,level) {
+         
+          
+          let circle, textElement;
+          
+        let name = node.name ?? 'no name '
+          let type = node.type ?? 'directory'
+          let children = node.children ?? []
+
+          if (type === 'directory') {
+            const numChildren = children.length;
+            const startX = x - ((numChildren - 1) * 35); // Adjust this value for spacing
+
+            circle = svg.circle(30).attr({ fill: '#3498db', stroke: '#2980b9', 'stroke-width': 2 }).move(startX, y);
+            // textElement = svg.text(name).move(startX, y + 40).attr({ 'font-size': 12, 'text-anchor': 'middle' });
+
+            // Add tooltip to the circle
+            circle.node.innerHTML += `<title>${name}</title>`;
+
+            let offsetY = 70;
+            let offsetX = startX + 15;
+
+            children.forEach(child => {
+              const { circle: subCircle, textElement: subTextElement } = drawTree(svg, child, offsetX, y + offsetY,level + 1);
+              const childX = offsetX;
+              const childY = y + offsetY;
+
+              svg.line(x + 15, y + 30, childX + 15, childY).stroke({ color: '#2c3e50', width: 2 });
+
+              offsetX += 70; // Adjust this value to control the horizontal spacing
+            });
+          } else if (type === 'file') {
+            circle = svg.circle(30).attr({ fill: '#e74c3c', stroke: '#c0392b', 'stroke-width': 2 }).move(x - 15, y);
+            // textElement = svg.text(name).move(x - 15, y + 40).attr({ 'font-size': 12, 'text-anchor': 'middle' });
+
+            // Add tooltip to the circle
+            circle.node.innerHTML += `<title>${name}</title>`;
+          }
+
+        
+
+          return { circle, textElement };
+        }
+
+
+        // Draw the directory tree
+        drawTree(svg, data, rootX, rootY,0);
+      })
+      .catch(error => console.error('Error loading JSON:', error));
+  </script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+
+Search
+People
+Rooms
+svgdotjs/svg.js
+Mon, Dec 14, 2020
+This room is a continuation of another conversation.
+Can't find the old version of this room (room ID: !umoLIEPdUevBsIDugo:gitter.im), and we have not been provided with 'via_servers' to look for it. It's possible that guessing the server from the room ID will work. If you want to try, click this link:https://matrix.to/#/!umoLIEPdUevBsIDugo:gitter.im?via=gitter.im
+svgdotjs/svg.js
+@gitter-badger:gitter.im created this room. This is the start of svgdotjs/svg.js.
+
+Invite to this room
+expand
+@gitter-badger:gitter.im created and configured the room.
+gcpokyust (gcpokyust) joined the room
+gcpokyust (gcpokyust)
+Hi, I am joining to ask for your help.
+I got the following error :
+Uncaught TypeError: Cannot read property 'point' of undefined
+at new PaintHandler (svg.draw.js:27)
+at e.draw (svg.draw.js:207)
+at aaa.html:23
+
+fom the standalone usage of svg.draw.js plugin as follows:
+
+<div id="myDrawing"></div>
+1
+2
+3
+4
+5
+6
+7
+8
+9
+<script src="svg.min.js"></script>
+<script src="svg.draw.js"></script>
+
+<script>
+    //var drawing = new SVG('myDrawing').size(500, 500);
+    var poly2 = new SVG('myDrawing').size('100%', '100%')
+        .polygon().draw({
+            snapToGrid: 20
+        });
+</script>
+
+Can you show me what's wrong with these codes?
+
+Fuzzyma (Ulrich-Matthias Schäfer) joined the room
+Fuzzyma (Ulrich-Matthias Schäfer)
+I dont see anything wrong. Create a jsfiddle or codepen to show the issue in a real example
+Tue, Dec 15, 2020
+changed their display name and profile picture
+gcpokyust (gcpokyust)
+Thanks. 
+gcpokyust (gcpokyust)
+I also downloaded svg.draggable and executed manual-test.html without npm install.
+and I got the following :
+
+svg.draggable.js:1 Uncaught SyntaxError: Cannot use import statement outside a module
+manual-test.html:35
+Uncaught TypeError: draw.rect(...).center(...).draggable is not a function
+at manual-test.html:35
+
+Fuzzyma (Ulrich-Matthias Schäfer)
+manual test ist outdaten. it uses the wrong versions
+Fri, Dec 18, 2020
+gitter-badger (The Gitter Badger) made future room history visible to anyone.
+Sat, Dec 26, 2020
+mhd21 (mhd21) joined the room
+mhd21 (mhd21)
+hey guys, do you any idea how can I implement drawing lines as a polygon with the mouse?
+Sun, Dec 27, 2020
+Fuzzyma (Ulrich-Matthias Schäfer)
+Have a look at svg.draw.js
+mhd21 (mhd21)
+thanks
+another question, If I apply stroke-width on a path or line, is it applied on coordinates of the path or line? can I get the points of the area of the stroke?
+Mon, Dec 28, 2020
+Fuzzyma (Ulrich-Matthias Schäfer)
+I am not sure what you are asking
+you can not get the stroke area
+Sat, Jan 2, 2021
+mhd21 (mhd21)
+Hi, How can I merge two shapes as a path?, for example, a Rectangle and a Circle
+Fuzzyma (Ulrich-Matthias Schäfer)
+not with svg.js
+however you can convert them to a path by hand by joining both path strings 
+mhd21 (mhd21)
+Thanks for the answer, the thing I want is to create a drawing tool that when drawing a circle and then a rectangle that has an intersection for the circle, both be merged.
+do you have any Idea? I should do it with svgjs
+Fuzzyma (Ulrich-Matthias Schäfer)
+this is an incedible complex topic. There is no way in svg.js to truely merge two shapes. However , you can just use a mask and mask a bigger rectangle with teh circle and rectangle. that will look like a merged shape.
+mhd21 (mhd21)
+thanks
+Sun, Jan 17, 2021
+rossburton (Ross Burton) joined the room
+rossburton (Ross Burton)
+This might be a really silly question, but if I do draw = SVG().addTo('body').size(100,100) can I later get the size from the draw object?
+Fuzzyma (Ulrich-Matthias Schäfer)
+sure. width() and height() will get you the size
+rossburton (Ross Burton)
+So the question is why doesn't it work 😟
+Fuzzyma (Ulrich-Matthias Schäfer)
+it does: https://codepen.io/fuzzyma/pen/zYKyMmV?editors=1111
+
+zYKyMmV - CodePen
+rossburton (Ross Burton)
+yeah, my code no doubt!
+ha, forgot some ()
+Fuzzyma (Ulrich-Matthias Schäfer)
+^^
+rossburton (Ross Burton)
+love how javascript was entirely fine with draw.width-2 :)
+Fuzzyma (Ulrich-Matthias Schäfer)
+well thats definitely Not a Number 😃
+rossburton (Ross Burton)
+yeah i'm guessing size() just ignores NaNs
+Fuzzyma (Ulrich-Matthias Schäfer)
+I am not sure 😃. Maybe it does set them which would be ignored by the browser and lead to the default size of 300x200 or so
+rossburton (Ross Burton)
+only slightly offtopic: if I want the stroke on text to be behind instead of on top of the fill, do i need two text objects?
+Fuzzyma (Ulrich-Matthias Schäfer)
+yes
+rossburton (Ross Burton)
+bah to svg. but thanks.
+Fuzzyma (Ulrich-Matthias Schäfer)
+its well defined. the stroke is not a border. 
+rossburton (Ross Burton)
+yeah, was just wondering if there was a way to alter the rendering order when both are set
+Fuzzyma (Ulrich-Matthias Schäfer)
+never heard of it sorry ^^
+rossburton (Ross Burton)
+SVG.style() doesn't do what I expected. I may be doing something dumb again.
+1
+  draw.style(".header", {fill: "black", font: "20px ff-brokenscript-bc-web, serif"});
+results in <style fill="black" font="20px ff-brokenscript-bc-web, serif">.header</style>
+Fuzzyma (Ulrich-Matthias Schäfer)
+Wrong version of the docs
+The method is named css()
+rossburton (Ross Burton)
+Huh, my js is pulling 3.0 and the docs is 3.0
+Further dumb questions: TSpan.length(). what is that actually measuring and in what units?
+rossburton (Ross Burton)
+ah, points.
+Fuzzyma (Ulrich-Matthias Schäfer)
+I am not even sure - either px or user units
+rossburton (Ross Burton)
+mdn says pt but the numbers appear to be px. just ignoring that and basking in the glory of wrapped text
+I'm guessing that text wrapping is a 'bring your own' problem with svgjs and there's no helper?
+Fuzzyma (Ulrich-Matthias Schäfer)
+Text wrapping is horrendously complex and can only be done by a numerical approach. I programmed it before but it's not nice. Mostly your best bet is to guess the line length and wrap it there. That makes the calculation far less complex 
+Fuzzyma (Ulrich-Matthias Schäfer)
+I just realized that you are correct. Ofc the correct method is style()
+I didn't read your code correctly 😅
+And it seems like you discovered a bug. You can open an issue for that :)
+rossburton (Ross Burton)
+I'll file a bug
+rossburton (Ross Burton)
+https://github.com/rossburton/mausritter-item-cards/blob/main/svg.html#L53 is a pretty dumb but works wrap function if you know how wide in advance
+svgdotjs/svg.js#1186 for the style() issue
+
+style() doesn't write style correctly · Issue #1186 · svgdotjs/svg.js - GitHub
+If I call draw.style() to create a top-level stylesheet: draw.style(".header", {fill: "black", font: "20px ff-brokenscript-bc-web, serif"}); This results in the following elements in the SVG: <styl...
+Fuzzyma (Ulrich-Matthias Schäfer)
+looks quite good but doesnt support wrapping too long words 😉
+thx for the issue!
+looks like you are writing a game arent you? ^^
+rossburton (Ross Burton)
+Well, printable cards for a RPG
+size() says "Proportional resizing is also possible by leaving out height" but now I have an <image> with width=100 height=0
+I'm guessing that's a caveat for images, where the proportions are not known until load time
+Fuzzyma (Ulrich-Matthias Schäfer)
+thats true, but your issue is most likely that you didnt wait for the image to load. You have a load event which you can listen for and resize then
+Mon, Jan 18, 2021
+rossburton (Ross Burton)
+Is centre-positioning a svg native thing or a convenience?  specifically can i centre an image before its loaded
+Fuzzyma (Ulrich-Matthias Schäfer)
+just realized that the bug already has been fixed in master :)
+for the time beeing you can work around by using draw.put(new SVG.Style()).rule(selector, obj)
+rossburton (Ross Burton)
+Ah cool, thanks
+Any plans for a new release?
+Also what sort of architecture-purist designed SVG filters. I just want to do <image blend="multiply"> not this abomination :)
+rossburton (Ross Burton)
+Hm. Doing .element("feBlend") to hand-code a blend is resulting in an element <feblend>
+rossburton (Ross Burton)
+Okay, some SVG help please. Minimal example at https://pastebin.com/YsAjYNqc: means to be a red square with a black-on-white placeholder multiplied on top so the white is effectively transparent.
+<?xml version="1.0"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http:/ - Pastebin.com - Pastebin
+Pastebin.com is the number one paste tool since 2002. Pastebin is a website where you can store text online for a set period of time.
+For me the image is invisible though
+I'm guessing I'm doing something really dumb
+Fuzzyma (Ulrich-Matthias Schäfer)
+iam really not good with filters
+i can give you an example tho
+https://codepen.io/fuzzyma/pen/XoMPEp
+
+Filter Fire! - CodePen
+rossburton (Ross Burton)
+thats very nice :)
+Tue, Jan 19, 2021
+rossburton (Ross Burton)
+@Fuzzyma thanks for all the help so far
+One more question :)
+</columbo>
+So if I have a <img> in a page, I can drag it to my desktop etc and the browser will save the file
+Any idea how to do that with a svg generated with svgjs?
+Fuzzyma (Ulrich-Matthias Schäfer)
+Google how to display an svg string in a canvas
+You then can use the canvas instead
+rossburton (Ross Burton)
+is there an easy way to grab the svg as string?
+Fuzzyma (Ulrich-Matthias Schäfer)
+draw.svg()
+rossburton (Ross Burton)
+that's obvious 😉
+
